@@ -26,14 +26,14 @@ class Parser(private val lexer: Lexer) {
 
     fun errorMessage() = lexer.errorMessage()
     private fun error(): Token = throw SyntaxException("Invalid Syntax @ ${lexer.errorMessage()}")
-    private fun errorAST(): CalcAST = throw SyntaxException("Invalid Syntax @ ${lexer.errorMessage()}")
+    private fun errorAST(): AST = throw SyntaxException("Invalid Syntax @ ${lexer.errorMessage()}")
 
     private fun consume(type: Type): Any = if (currentToken.type == type) currentToken = lexer.getNextToken() else error()
 
     // atom: ("EXP"|"LN"|"LOG"|"SQRT"|"COS"|"SIN"|"TAN"|"ABS"|...) '(' complex_expr ')'
     //      | '(' complex_expr ')'
     //      | number
-    private fun atom(): CalcAST {
+    private fun atom(): AST {
         val token = currentToken
         return when (token.type) {
             Type.EXP, Type.LN, Type.LOG, Type.COS,
@@ -69,7 +69,7 @@ class Parser(private val lexer: Lexer) {
     }
 
     // power: atom ['**' factor]
-    private fun power(): CalcAST {
+    private fun power(): AST {
         var node = atom()
         val token = currentToken
         if (currentToken.type == Type.POWER) {
@@ -80,7 +80,7 @@ class Parser(private val lexer: Lexer) {
     }
 
     // factor: ('+'|'-'|'~') factor | power
-    private fun factor(): CalcAST {
+    private fun factor(): AST {
         return when (currentToken.type) {
             Type.PLUS, Type.MINUS, Type.FLIP -> {
                 val token = currentToken
@@ -92,7 +92,7 @@ class Parser(private val lexer: Lexer) {
     }
 
     // term: factor (('*'|'/'|'%'|'//') factor)*
-    private fun term(): CalcAST {
+    private fun term(): AST {
         var node = factor()
         while (currentToken.type in arrayOf(
                 Type.MULTIPLY,
@@ -108,7 +108,7 @@ class Parser(private val lexer: Lexer) {
     }
 
     // arith_expr: term (('+'|'-') term)*
-    private fun arith_expr(): CalcAST {
+    private fun arith_expr(): AST {
         var node = term()
         while (currentToken.type in arrayOf(Type.PLUS, Type.MINUS)) {
             val token = currentToken
@@ -119,7 +119,7 @@ class Parser(private val lexer: Lexer) {
     }
 
     //shift_expr: arith_expr (('<<'|'>>') arith_expr)*
-    private fun shift_expr(): CalcAST {
+    private fun shift_expr(): AST {
         var node = arith_expr()
         while (currentToken.type in arrayOf(
                 Type.LEFT_SHIFT,
@@ -133,7 +133,7 @@ class Parser(private val lexer: Lexer) {
     }
 
     //and_expr: shift_expr ('&' shift_expr)*
-    private fun and_expr(): CalcAST {
+    private fun and_expr(): AST {
         var node = shift_expr()
         while (currentToken.type == Type.AND) {
             val token = currentToken
@@ -144,7 +144,7 @@ class Parser(private val lexer: Lexer) {
     }
 
     //xor_expr: and_expr ('^' and_expr)*
-    private fun xor_expr(): CalcAST {
+    private fun xor_expr(): AST {
         var node = and_expr()
         while (currentToken.type == Type.XOR) {
             val token = currentToken
@@ -155,7 +155,7 @@ class Parser(private val lexer: Lexer) {
     }
 
     //complex_expr: xor_expr ('|' xor_expr)*
-    private fun complex_expr(): CalcAST {
+    private fun complex_expr(): AST {
         var node = xor_expr()
         while (currentToken.type == Type.OR) {
             val token = currentToken
@@ -166,11 +166,11 @@ class Parser(private val lexer: Lexer) {
     }
 
     // expr: complex_expr
-    private fun expr(): CalcAST {
+    private fun expr(): AST {
         return complex_expr()
     }
 
-    fun parse(): CalcAST {
+    fun parse(): AST {
         return expr()
     }
 }

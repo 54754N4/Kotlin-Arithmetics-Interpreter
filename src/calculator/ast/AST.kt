@@ -2,11 +2,11 @@ package calculator.ast
 
 import calculator.grammar.Token
 
-sealed class CalcAST: Visitable {
+sealed class AST: Visitable {
     override fun accept(visitor: Visitor): Double = visitor.visit(this)
 }
 
-class Number(val token: Token): CalcAST()
-class BinaryOperator(val left: CalcAST, val token: Token, val right: CalcAST): CalcAST()
-class UnaryOperator(val token: Token, val expr: CalcAST): CalcAST()
-class Composition(val token: Token, val expr: CalcAST): CalcAST()
+class Number(val token: Token): AST()
+class BinaryOperator(val left: AST, val token: Token, val right: AST): AST()
+class UnaryOperator(val token: Token, val expr: AST): AST()
+class Composition(val token: Token, val expr: AST): AST()
